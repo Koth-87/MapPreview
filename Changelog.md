@@ -1,4 +1,8 @@
 
+v1.12.25
+
+- Fixed compatibility issues with various mods that caused inaccurate previews
+
 v1.12.24
 
 - Fixed compatibility with the 'Visual Exceptions' mod
