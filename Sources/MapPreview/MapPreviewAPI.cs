@@ -41,6 +41,10 @@ public static class MapPreviewAPI
         MainPatchGroup.CheckForConflicts(Logger);
         GenLowPatchGroup.CheckForConflicts(Logger);
 
+        #if RW_1_6_OR_GREATER
+        RandCompatCache.Load();
+        #endif
+
         if (Logger is IngameLogContext ingameLogger)
         {
             ingameLogger.IgnoreLogLimitLevel = LogContext.LogLevel.Error;

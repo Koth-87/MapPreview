@@ -36,7 +36,7 @@ internal static class Patch_Verse_Map
 
         #if RW_1_6_OR_GREATER
 
-        if (MapPreviewGenerator.ExpectedRandIterationsInMapComponents.TryGetValue(type.FullName ?? type.Name, out var expectedIt))
+        if (RandCompatCache.TryGetExpectedInterations(type, out var expectedIt))
         {
             Patch_Verse_Rand.SkipIterations(expectedIt);
         }
@@ -49,17 +49,19 @@ internal static class Patch_Verse_Map
     #if RW_1_6_OR_GREATER
 
     private static uint _prevRandIt;
+    private static uint _prevRandCompIdx;
 
     [HarmonyPrefix]
     [HarmonyPatch("FillComponents")]
-    [HarmonyPriority(Priority.Low)]
+    [HarmonyPriority(-1)]
     private static void FillComponents_Prefix(Map __instance)
     {
         if (MapPreviewAPI.IsGeneratingPreview && MapPreviewGenerator.IsGeneratingOnCurrentThread) return;
 
-        const uint expectedIterations = MapPreviewGenerator.ExpectedRandIterationsInVanillaMapComponents;
+        const uint expectedIterations = RandCompatCache.ExpectedRandIterationsInVanillaMapComponents;
 
         _prevRandIt = Rand.iterations;
+        _prevRandCompIdx = 0;
 
         if (MapGenerator.mapBeingGenerated == __instance && _prevRandIt != expectedIterations)
         {
@@ -103,33 +105,24 @@ internal static class Patch_Verse_Map
 
             var mcp = LoadedModManager.RunningMods.FirstOrDefault(m => m.assemblies.loadedAssemblies.Contains(type.Assembly));
 
-            if (MapPreviewGenerator.ExpectedRandIterationsInMapComponents.TryGetValue(typeName, out var expectedIt))
+            if (!RandCompatCache.TryGetExpectedInterations(type, out var expectedIt) || expectedIt != actualIt)
             {
-                if (expectedIt == actualIt)
-                {
-                    MapPreviewAPI.Logger.Debug($"Map component {typeName} from mod {mcp} used {expectedIt} RNG iterations as expected.");
-                }
-                else
-                {
-                    MapPreviewAPI.Logger.Error(
-                        $"Map Preview has detected a compatibility issue causing previews to be inaccurate: " +
-                        $"Map component {typeName} from mod {mcp} has modified the RNG state by {actualIt} in its constructor, " +
-                        $"which does not match the expected amount of {expectedIt} iterations." +
-                        $"Please report this on the Map Preview workshop page, so this compatibility issue can be fixed."
-                    );
-                }
+                RandCompatCache.UpdateExpectedIterations(type, actualIt);
+                RandCompatCache.Save();
+
+                MapPreviewAPI.Logger.Warn(
+                    $"Detected RNG usage in constructor of map component {typeName} ({_prevRandCompIdx}) from mod {mcp} with {actualIt}/{expectedIt} iterations. " +
+                    $"Map Preview will take this into account from now on, but any previews generated until now may have been inaccurate."
+                );
             }
             else
             {
-                MapPreviewAPI.Logger.Error(
-                    $"Map Preview has detected a compatibility issue causing previews to be inaccurate: " +
-                    $"Map component {typeName} from mod {mcp} has modified the RNG state by {actualIt} in its constructor. " +
-                    $"Please report this on the Map Preview workshop page, so this compatibility issue can be fixed."
-                );
+                MapPreviewAPI.Logger.Debug($"Map component {typeName} from mod {mcp} used {expectedIt} RNG iterations as expected.");
             }
         }
 
         _prevRandIt = randItAfter;
+        _prevRandCompIdx++;
 
         return component;
     }

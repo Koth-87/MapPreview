@@ -499,18 +499,6 @@ public class MapPreviewGenerator : IDisposable
         }
     }
 
-    #if RW_1_6_OR_GREATER
-
-    internal const uint ExpectedRandIterationsInVanillaMapComponents = 1U; // GasGrid ctor does one Rand call
-
-    internal static readonly Dictionary<string, uint> ExpectedRandIterationsInMapComponents = new()
-    {
-        { "MultiFloors.MF_LevelMapComp", 1 },
-        { "ZombieLand.ZombieWeather", 8 },
-    };
-
-    #endif
-
     internal static readonly HashSet<string> IncludedMapComponentsMinimal = new()
     {
         // Vanilla
@@ -676,7 +664,7 @@ public class MapPreviewGenerator : IDisposable
         // ##### Rand Iteration Compensation #####
 
         #if RW_1_6_OR_GREATER
-        Patch_Verse_Rand.SkipIterations(ExpectedRandIterationsInVanillaMapComponents);
+        Patch_Verse_Rand.SkipIterations(RandCompatCache.ExpectedRandIterationsInVanillaMapComponents);
         #endif
 
         // ##### Custom Components #####
@@ -704,7 +692,7 @@ public class MapPreviewGenerator : IDisposable
                 }
             }
             #if RW_1_6_OR_GREATER
-            else if (ExpectedRandIterationsInMapComponents.TryGetValue(type.FullName ?? type.Name, out var expectedIt))
+            else if (RandCompatCache.TryGetExpectedInterations(type, out var expectedIt))
             {
                 Patch_Verse_Rand.SkipIterations(expectedIt);
             }
