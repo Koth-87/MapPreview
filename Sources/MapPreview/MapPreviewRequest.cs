@@ -98,10 +98,11 @@ public class MapPreviewRequest
 
     public static readonly Predicate<GenStepDef> DefaultGenStepFilter = genStep => DefaultGenStepPredicates.Any(p => p(genStep));
 
-    private static readonly List<Predicate<GenStepDef>> DefaultGenStepPredicates = new()
-    {
-        genStep => DefaultGenSteps.Contains(genStep.defName)
-    };
+    private static readonly List<Predicate<GenStepDef>> DefaultGenStepPredicates =
+    [
+        genStep => DefaultGenSteps.Contains(genStep.defName),
+        genStep => genStep.GetModExtension<GenStepProperties>()?.includeInPreviews ?? false
+    ];
 
     private static readonly List<string> DefaultGenSteps = new()
     {
