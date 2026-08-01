@@ -69,7 +69,12 @@ public class MapPreviewWindow : Window
         }
 
         int seed = SeedRerollData.GetMapSeed(world, tileId);
+
+        #if RW_1_6_OR_GREATER
+        var mapSize = MapSizeUtility.DetermineMapSize(world, tileId, mapParent);
+        #else
         var mapSize = MapSizeUtility.DetermineMapSize(world, mapParent);
+        #endif
 
         float desiredSize = MapPreviewMod.Settings.PreviewWindowSize;
         float largeSide = Math.Max(mapSize.x, mapSize.z);
