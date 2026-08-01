@@ -1,4 +1,8 @@
 
+v1.12.26.1
+
+- Fix backwards compatibility of API assembly
+
 v1.12.26
 
 - Fixed compatibility patch for Vanilla Events Expanded v2.x
