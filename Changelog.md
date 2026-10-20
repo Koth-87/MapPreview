@@ -1,4 +1,8 @@
 
+v1.13.0
+
+- Added support for RimWorld 1.7
+
 v1.12.26.1
 
 - Fix backwards compatibility of API assembly
