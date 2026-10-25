@@ -36,14 +36,6 @@ public static class MapPreviewAPI
         GenPatchGroup ??= LunarAPI.RootPatchGroup.NewSubGroup("Gen");
         GenPatchGroup.AddPatches(typeof(MapPreviewAPI).Assembly);
 
-        #if RW_1_7_OR_GREATER
-        // apply conditional patches once to prevent inlining issues
-        GenLowPatchGroup.Subscribe();
-        GenPatchGroup.Subscribe();
-        GenLowPatchGroup.Unsubscribe();
-        GenPatchGroup.Unsubscribe();
-        #endif
-
         ModCompat.ApplyAll(LunarAPI, CompatPatchGroup);
 
         MainPatchGroup.CheckForConflicts(Logger);
